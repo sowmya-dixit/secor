@@ -77,8 +77,8 @@ public class PatternDateMessageParser extends MessageParser {
                 try {
                 	SimpleDateFormat outputFormatter = new SimpleDateFormat(StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
                 	Date dateFormat = null;
-                	if(fieldValue instanceof Long) {
-                		dateFormat = new Date((Long)fieldValue);
+                	if(fieldValue instanceof Number) {
+                		dateFormat = new Date(((Number)fieldValue).longValue());
                 	} else {
                 		SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
                 		dateFormat = inputFormatter.parse(fieldValue.toString());

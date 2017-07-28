@@ -78,17 +78,12 @@ public class PatternDateMessageParser extends MessageParser {
                 	SimpleDateFormat outputFormatter = new SimpleDateFormat(StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
                 	Date dateFormat = null;
                 	if(fieldValue instanceof Number) {
-                		System.out.println("fieldValue is type of epoch type : " + fieldValue);
                 		dateFormat = new Date(((Number)fieldValue).longValue());
-                		System.out.println("epoch time conversion in dateFormat : " + dateFormat);
                 	} else {
-                		System.out.println("fieldValue is type of timestamp : " + fieldValue);
                 		SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
                 		dateFormat = inputFormatter.parse(fieldValue.toString());
                 	}
-                	System.out.println("prefixEnabled : " + prefixEnabled);
                     result[0] = prefixEnabled ? getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat) : outputFormatter.format(dateFormat);
-                    System.out.println("date : " + result[0]);
                     return result;
                 } catch (Exception e) {
                     LOG.warn("Impossible to convert date = " + fieldValue.toString()

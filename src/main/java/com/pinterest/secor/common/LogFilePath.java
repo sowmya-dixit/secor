@@ -19,12 +19,19 @@ package com.pinterest.secor.common;
 import com.pinterest.secor.message.ParsedMessage;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.text.StrSubstitutor;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * LogFilePath represents path of a log file.  It contains convenience method for building and
@@ -54,6 +61,10 @@ public class LogFilePath {
     private final long[] mOffsets;
     private final String mExtension;
     private MessageDigest messageDigest;
+    
+    private String mOutputFilePattern;
+	private SimpleDateFormat timeFormat = new SimpleDateFormat("HH-mm");
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("YYYYMMdd");
 
 
     public LogFilePath(String prefix, String topic, String[] partitions, int generation,
@@ -139,10 +150,23 @@ public class LogFilePath {
         return result;
     }
 
-    public LogFilePath withPrefix(String prefix) {
-        return new LogFilePath(prefix, mTopic, mPartitions, mGeneration, mKafkaPartitions, mOffsets,
-            mExtension);
-    }
+    public LogFilePath withPrefix(String prefix, SecorConfig mConfig) {
+		return new LogFilePath(prefix, mTopic, mPartitions, mGeneration, mKafkaPartitions, mOffsets, mExtension,
+				mConfig);
+	}
+    
+    public LogFilePath(String prefix, String topic, String[] partitions, int generation, int[] kafkaPartition,
+			long[] offset, String extension, SecorConfig config) {
+
+		mPrefix = prefix;
+		mTopic = topic;
+		mPartitions = partitions;
+		mGeneration = generation;
+		mKafkaPartitions = kafkaPartition;
+		mOffsets = offset;
+		mExtension = extension;
+		mOutputFilePattern = config.getS3OutputFilePattern();
+	}
 
     public String getLogFileParentDir() {
         ArrayList<String> elements = new ArrayList<String>();
@@ -191,6 +215,9 @@ public class LogFilePath {
     }
 
     public String getLogFilePath() {
+    	if (StringUtils.isNotBlank(mOutputFilePattern)) {
+			return getLogFilePath(mOutputFilePattern);
+		}
         String basename = getLogFileBasename();
 
         ArrayList<String> pathElements = new ArrayList<String>();
@@ -199,6 +226,36 @@ public class LogFilePath {
 
         return StringUtils.join(pathElements, "/") + mExtension;
     }
+    
+    private String getLogFilePath(String pattern) {
+
+		List<String> pathElements = new ArrayList<String>();
+		pathElements.add(mPrefix);
+		pathElements.add(StrSubstitutor.replace(pattern, getValueMap(), "{", "}"));
+		System.out.println("Path:" + StringUtils.join(pathElements, "/") + mExtension);
+		return StringUtils.join(pathElements, "/") + mExtension;
+	}
+
+	private Map<String, String> getValueMap() {
+
+		Map<String, String> valueMap = new HashMap<String, String>();
+		valueMap.put("randomHex", getRandomHex());
+		valueMap.put("partition", mPartitions[0]);
+		valueMap.put("topic", mTopic);
+		valueMap.put("generation", mGeneration + "");
+		valueMap.put("kafkaPartition", mKafkaPartitions[0] + "");
+		valueMap.put("fmOffset", String.format("%020d", mOffsets[0]));
+		valueMap.put("currentTimestamp", System.currentTimeMillis() + "");
+		valueMap.put("currentTime", timeFormat.format(new Date()));
+		valueMap.put("currentDate", dateFormat.format(new Date()));
+		return valueMap;
+	}
+
+	public static String getRandomHex() {
+
+		Random random = new Random();
+		return StringUtils.substring(Integer.toHexString(random.nextInt()), 0, 4);
+	}
 
     public String getLogFileCrcPath() {
         String basename = "." + getLogFileBasename() + ".crc";

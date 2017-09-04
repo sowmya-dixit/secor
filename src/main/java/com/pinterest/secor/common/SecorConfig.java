@@ -611,4 +611,31 @@ public class SecorConfig {
     public String getORCSchemaProviderClass(){
         return getString("secor.orc.schema.provider");
     }
+    
+    public String getS3OutputFilePattern() {
+	 	return getString("secor.s3.output_file_pattern");
+	 }
+
+	public String getPartitionPrefixMapping() {
+		String[] map = getStringArray("secor.partition.prefix.mapping");
+		if (null != map)
+			return StringUtils.join(map, ',');
+		return "";
+	}
+
+	public boolean isPartitionPrefixEnabled() {
+		return getBoolean("secor.partition.prefix.enable", false);
+	}
+
+	public String getPartitionPrefixIdentifier() {
+		return getString("secor.partition.prefix.identifier", "");
+	}
+	
+	public String getPartitionOutputDtFormat() {
+		return getString("secor.partition.output_dt_format");
+	}
+
+	public String getMaxFileAgePolicy() {
+	    return getString("secor.max.file.age.policy");
+	}
 }

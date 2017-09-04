@@ -21,6 +21,7 @@ import com.pinterest.secor.util.FileUtil;
 import com.pinterest.secor.util.ReflectionUtil;
 import com.pinterest.secor.util.StatsUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -258,12 +259,13 @@ public class FileRegistry {
 
     public long getModificationAgeSec(TopicPartitionGroup topicPartitionGroup) throws IOException {
         long now = System.currentTimeMillis() / 1000L;
-        long result;
-        if (mConfig.getFileAgeYoungest()) {
-            result = Long.MAX_VALUE;
-        } else {
-            result = -1;
-        }
+        long result = Long.MAX_VALUE;
+		boolean useOldestFile = StringUtils.equals("oldest", mConfig.getMaxFileAgePolicy());
+//        if (mConfig.getFileAgeYoungest()) {
+//            result = Long.MAX_VALUE;
+//        } else {
+//            result = -1;
+//        }
         Collection<LogFilePath> paths = getPaths(topicPartitionGroup);
         for (LogFilePath path : paths) {
             Long creationTime = mCreationTimes.get(path);
@@ -272,15 +274,22 @@ public class FileRegistry {
                 creationTime = now;
             }
             long age = now - creationTime;
-            if (mConfig.getFileAgeYoungest()) {
-                if (age < result) {
-                    result = age;
-                }
-            } else {
-                if (age > result) {
-                    result = age;
-                }
-            }
+//            if (mConfig.getFileAgeYoungest()) {
+//                if (age < result) {
+//                    result = age;
+//                }
+//            } else {
+//                if (age > result) {
+//                    result = age;
+//                }
+//            }
+            if (result == Long.MAX_VALUE) {
+				result = age;
+			} else if (!useOldestFile && age < result) {
+				result = age;
+			} else if (useOldestFile && age > result) {
+				result = age;
+			}
         }
         if (result == Long.MAX_VALUE) {
             result = -1;

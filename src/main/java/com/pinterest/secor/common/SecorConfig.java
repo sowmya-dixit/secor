@@ -131,6 +131,14 @@ public class SecorConfig {
         return getString("kafka.offsets.storage");
     }
 
+    public boolean useKafkaTimestamp() {
+        return getBoolean("kafka.useTimestamp", false);
+    }
+
+    public String getKafkaMessageTimestampClass() {
+        return getString("kafka.message.timestamp.className");
+    }
+
     public int getGeneration() {
         return getInt("secor.generation");
     }
@@ -567,7 +575,7 @@ public class SecorConfig {
     }
 
     public String getMetricsCollectorClass() {
-        return mProperties.getString("secor.monitoring.metrics.collector.class");
+        return getString("secor.monitoring.metrics.collector.class");
     }
     
     /**

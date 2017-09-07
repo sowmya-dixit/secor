@@ -639,7 +639,7 @@
             </dependencies>
         </profile>
         <profile>
-            <id>kafka-0.10-dev</id>
+            <id>kafka-0.10</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>

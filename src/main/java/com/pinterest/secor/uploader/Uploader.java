@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,6 +53,8 @@ public class Uploader {
     private OffsetTracker mOffsetTracker;
     private FileRegistry mFileRegistry;
     private ZookeeperConnector mZookeeperConnector;
+    
+    private Long lastDay = new Date().getTime() / 86400;
 
     public Uploader(SecorConfig config, OffsetTracker offsetTracker, FileRegistry fileRegistry) {
         this(config, offsetTracker, fileRegistry, new ZookeeperConnector(config));
@@ -202,7 +205,15 @@ public class Uploader {
         final long modificationAgeSec = mFileRegistry.getModificationAgeSec(topicPartition);
         long maxFileAgeSeconds = mConfig.getMaxFileAgeSeconds();
         LOG.debug("size: " + size + " | maxFileSizeBytes: " + mConfig.getMaxFileSizeBytes() + " | modificationAge: " + modificationAgeSec + " | maxFileAgeSeconds: " + maxFileAgeSeconds);
-        if (size >= mConfig.getMaxFileSizeBytes() || modificationAgeSec >= maxFileAgeSeconds) {
+        long currentDay = new Date().getTime() / 86400;
+        boolean dayChange = false;
+        if(currentDay > lastDay) {
+        	System.out.println("day changed : " + new Date().getTime());
+        	lastDay = currentDay;
+        	dayChange = true;
+        }
+        	
+        if (size >= mConfig.getMaxFileSizeBytes() || modificationAgeSec >= maxFileAgeSeconds || dayChange) {
             long newOffsetCount = mZookeeperConnector.getCommittedOffsetCount(topicPartition);
             long oldOffsetCount = mOffsetTracker.setCommittedOffsetCount(topicPartition,
                     newOffsetCount);

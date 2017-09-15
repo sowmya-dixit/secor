@@ -54,7 +54,7 @@ public class Uploader {
     private FileRegistry mFileRegistry;
     private ZookeeperConnector mZookeeperConnector;
     
-    private Long lastDay = new Date().getTime() / 86400;
+    private int lastDay = new Date().getDate();
 
     public Uploader(SecorConfig config, OffsetTracker offsetTracker, FileRegistry fileRegistry) {
         this(config, offsetTracker, fileRegistry, new ZookeeperConnector(config));
@@ -205,11 +205,15 @@ public class Uploader {
         final long modificationAgeSec = mFileRegistry.getModificationAgeSec(topicPartition);
         long maxFileAgeSeconds = mConfig.getMaxFileAgeSeconds();
         LOG.debug("size: " + size + " | maxFileSizeBytes: " + mConfig.getMaxFileSizeBytes() + " | modificationAge: " + modificationAgeSec + " | maxFileAgeSeconds: " + maxFileAgeSeconds);
-        long currentDay = new Date().getTime() / 86400;
+        int currentDay = new Date().getDate();
         boolean dayChange = false;
         LOG.info("lastDay : " + lastDay + " :: currentDay :" + currentDay );
         if(currentDay > lastDay) {
         	LOG.info("day changed : " + new Date().getTime());
+        	lastDay = currentDay;
+        	dayChange = true;
+        }
+        if(lastDay > currentDay) {
         	lastDay = currentDay;
         	dayChange = true;
         }

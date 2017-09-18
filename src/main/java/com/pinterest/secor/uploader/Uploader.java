@@ -207,11 +207,7 @@ public class Uploader {
         LOG.debug("size: " + size + " | maxFileSizeBytes: " + mConfig.getMaxFileSizeBytes() + " | modificationAge: " + modificationAgeSec + " | maxFileAgeSeconds: " + maxFileAgeSeconds);
         int currentDay = new Date().getDate();
         boolean dayChange = false;
-        if(currentDay > lastDay) {
-        	lastDay = currentDay;
-        	dayChange = true;
-        }
-        if(lastDay > currentDay) {
+        if(!(currentDay == lastDay)) {
         	lastDay = currentDay;
         	dayChange = true;
         }

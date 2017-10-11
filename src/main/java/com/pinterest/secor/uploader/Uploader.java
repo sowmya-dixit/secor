@@ -214,7 +214,7 @@ public class Uploader {
         LOG.info("checkTopicPartition.. dayChange : " + dayChange);
         LOG.info("condition ::  Filesize: " + size + ", max : " + mConfig.getMaxFileSizeBytes());
         LOG.info("condition ::  modificationAgeSec: " + modificationAgeSec + ", max : " + maxFileAgeSeconds);
-        if (size >= mConfig.getMaxFileSizeBytes() || modificationAgeSec >= maxFileAgeSeconds || dayChange) {
+        if (size >= mConfig.getMaxFileSizeBytes() || modificationAgeSec >= maxFileAgeSeconds) {
         	LOG.info("Initiate Upload files..");
         	long newOffsetCount = mZookeeperConnector.getCommittedOffsetCount(topicPartition);
             long oldOffsetCount = mOffsetTracker.setCommittedOffsetCount(topicPartition,

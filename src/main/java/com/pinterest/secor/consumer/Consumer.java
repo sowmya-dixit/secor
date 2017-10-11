@@ -103,6 +103,7 @@ public class Consumer extends Thread {
     }
 
     private void checkUploadPolicy() {
+    	LOG.info("====================================================================");
         try {
             mUploader.applyPolicy();
         } catch (Exception e) {

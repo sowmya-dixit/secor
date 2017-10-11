@@ -211,13 +211,17 @@ public class Uploader {
         	lastDay = currentDay;
         	dayChange = true;
         }
-        	
+        LOG.info("checkTopicPartition.. dayChange : " + dayChange);
+        LOG.info("condition ::  Filesize: " + size + ", max : " + mConfig.getMaxFileSizeBytes());
+        LOG.info("condition ::  modificationAgeSec: " + modificationAgeSec + ", max : " + maxFileAgeSeconds);
         if (size >= mConfig.getMaxFileSizeBytes() || modificationAgeSec >= maxFileAgeSeconds || dayChange) {
-            long newOffsetCount = mZookeeperConnector.getCommittedOffsetCount(topicPartition);
+        	LOG.info("Initiate Upload files..");
+        	long newOffsetCount = mZookeeperConnector.getCommittedOffsetCount(topicPartition);
             long oldOffsetCount = mOffsetTracker.setCommittedOffsetCount(topicPartition,
                     newOffsetCount);
             long lastSeenOffset = mOffsetTracker.getLastSeenOffset(topicPartition);
             if (oldOffsetCount == newOffsetCount) {
+            	LOG.info(" Uploading files..");
                 LOG.debug("Uploading for: " + topicPartition);
                 uploadFiles(topicPartition);
             } else if (newOffsetCount > lastSeenOffset) {  // && oldOffset < newOffset
@@ -239,6 +243,7 @@ public class Uploader {
 
     public void applyPolicy() throws Exception {
         Collection<TopicPartition> topicPartitions = mFileRegistry.getTopicPartitions();
+        LOG.info(" applyPolicy : " + topicPartitions.size() + "   " + new Date());
         for (TopicPartition topicPartition : topicPartitions) {
             checkTopicPartition(topicPartition);
         }

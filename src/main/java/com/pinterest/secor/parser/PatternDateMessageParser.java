@@ -79,8 +79,6 @@ public class PatternDateMessageParser extends MessageParser {
                 	if(fieldValue instanceof Number) {
                 		dateFormat = new Date(((Number)fieldValue).longValue());
                 	} else {
-                		System.out.println("inside into else condition");
-                		
                 		SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
                 		dateFormat = inputFormatter.parse(fieldValue.toString());
                 	}

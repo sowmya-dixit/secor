@@ -68,12 +68,10 @@ public class PatternDateMessageParser extends MessageParser {
         JSONObject jsonObject = (JSONObject) JSONValue.parse(message.getPayload());
         boolean prefixEnabled = mConfig.isPartitionPrefixEnabled();
         String result[] = { prefixEnabled ? partitionPrefixMap.get("DEFAULT") + defaultDate : defaultDate };
-        System.out.println("jsonObject : " + jsonObject);
         if (jsonObject != null) {
             Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
             Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
             Object inputPattern = mConfig.getMessageTimestampInputPattern();
-            System.out.println("fieldValue, eventValue, inputPattern  :::  " + fieldValue + " :: " + eventValue+ " :: " + inputPattern);
             if (fieldValue != null && inputPattern != null) {
                 try {
                 	SimpleDateFormat outputFormatter = new SimpleDateFormat(StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
@@ -86,7 +84,6 @@ public class PatternDateMessageParser extends MessageParser {
                 		SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
                 		dateFormat = inputFormatter.parse(fieldValue.toString());
                 	}
-                	System.out.println("inside into else condition : " + dateFormat);
                     result[0] = prefixEnabled ? getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat) : outputFormatter.format(dateFormat);
                     return result;
                 } catch (Exception e) {

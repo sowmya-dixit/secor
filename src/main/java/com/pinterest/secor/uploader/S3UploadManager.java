@@ -154,9 +154,7 @@ public class S3UploadManager extends UploadManager {
         else {
             s3Key = localPath.withPrefix(curS3Path, mConfig).getLogFilePath();
         }
-        LOG.info("1st character : " + s3Key.charAt(0));
         if(s3Key.charAt(0) == '/') s3Key = s3Key.substring(1);
-        LOG.info("s3Bucket : " + s3Bucket + "  s3Key : " + s3Key);
         
         // make upload request, taking into account configured options for encryption
         PutObjectRequest uploadRequest = new PutObjectRequest(s3Bucket, s3Key, localFile);

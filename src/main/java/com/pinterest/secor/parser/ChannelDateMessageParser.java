@@ -85,7 +85,9 @@ public class ChannelDateMessageParser extends MessageParser {
                 		SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
                 		dateFormat = inputFormatter.parse(fieldValue.toString());
                 	}
-                    String path = "channel-exhaust/" + jsonObject.get("context.channel") + "/" + outputFormatter.format(dateFormat);
+                    Map<String, Object> context = (HashMap<String, Object>)jsonObject.get("context");
+                    String channel = (String) context.get("channel");
+                    String path = "channel-exhaust/" + channel + "/" + outputFormatter.format(dateFormat);
                     result[0] = prefixEnabled ? getPrefix(eventValue.toString()) + path : path;
                     return result;
                 } catch (Exception e) {

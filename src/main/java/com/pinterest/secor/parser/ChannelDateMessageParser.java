@@ -51,6 +51,7 @@ public class ChannelDateMessageParser extends MessageParser {
     protected static final String defaultDate = "1970-01-01";
     protected static final String defaultFormatter = "yyyy-MM-dd";
     private Map<String, String> partitionPrefixMap;
+    private static final channelScrubRegex = "[^a-zA-Z0-9.\\s+_$-]";
 
     public ChannelDateMessageParser(SecorConfig config) {
         super(config);
@@ -86,7 +87,11 @@ public class ChannelDateMessageParser extends MessageParser {
                 		dateFormat = inputFormatter.parse(fieldValue.toString());
                 	}
                     Map<String, Object> context = (HashMap<String, Object>)jsonObject.get("context");
-                    String channel = (String) context.get("channel");
+                    
+                    String rawChannelStr = (String) context.get("channel");
+                    String channel = rawChannelStr.replaceAll(channelScrubRegex, "");
+                    System.out.println("raw channel: "+ rawChannelStr + "& After scrubbed: "+ channel)
+                    
                     String path = "channel-exhaust/" + channel + "/" + outputFormatter.format(dateFormat);
                     result[0] = prefixEnabled ? getPrefix(eventValue.toString()) + path : path;
                     return result;

@@ -51,7 +51,7 @@ public class ChannelDateMessageParser extends MessageParser {
     protected static final String defaultDate = "1970-01-01";
     protected static final String defaultFormatter = "yyyy-MM-dd";
     private Map<String, String> partitionPrefixMap;
-    private static final String channelScrubRegex = "[^a-zA-Z0-9.\\s+_$-]";
+    private static final String channelScrubRegex = "[^a-zA-Z0-9._$-]";
 
     public ChannelDateMessageParser(SecorConfig config) {
         super(config);

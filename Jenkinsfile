@@ -14,8 +14,7 @@ node('build-slave') {
         env.NODE_ENV = "build"
         print "Environment will be : ${env.NODE_ENV}"
         sh('sudo mvn clean install -DskipTests=true')
-         sh('chmod 777 ./build.sh')
-         sh('./build.sh')
+         archive includes: "target/secor-0.24-SNAPSHOT-bin.tar.gz"
       }
       }
     catch (err) {

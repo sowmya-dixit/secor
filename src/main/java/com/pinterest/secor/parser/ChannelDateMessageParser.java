@@ -52,7 +52,7 @@ public class ChannelDateMessageParser extends MessageParser {
     protected static final String defaultFormatter = "yyyy-MM-dd";
     private Map<String, String> partitionPrefixMap;
     private static final String channelScrubRegex = "[^a-zA-Z0-9._$-]";
-
+    
     public ChannelDateMessageParser(SecorConfig config) {
         super(config);
         partitionPrefixMap = new HashMap<String, String>();
@@ -68,6 +68,7 @@ public class ChannelDateMessageParser extends MessageParser {
     @Override
     public String[] extractPartitions(Message message) {
 
+    	String basePath = mConfig.getS3Path();
         JSONObject jsonObject = (JSONObject) JSONValue.parse(message.getPayload());
         boolean prefixEnabled = mConfig.isPartitionPrefixEnabled();
         String result[] = { prefixEnabled ? partitionPrefixMap.get("DEFAULT") + defaultDate : defaultDate };
@@ -90,10 +91,9 @@ public class ChannelDateMessageParser extends MessageParser {
                     
                     String rawChannelStr = (String) context.get("channel");
                     String channel = rawChannelStr.replaceAll(channelScrubRegex, "");
-                    System.out.println("raw channel: "+ rawChannelStr + "& After scrubbed: "+ channel);
                     
-                    String path = "channel-exhaust/" + channel + "/" + outputFormatter.format(dateFormat);
-                    result[0] = prefixEnabled ? getPrefix(eventValue.toString()) + path : path;
+                    String path = channel + "/" + outputFormatter.format(dateFormat);
+                    result[0] = prefixEnabled ? basePath + getPrefix(eventValue.toString()) + path : path;
                     return result;
                 } catch (Exception e) {
                     LOG.warn("Impossible to convert date = " + fieldValue.toString()

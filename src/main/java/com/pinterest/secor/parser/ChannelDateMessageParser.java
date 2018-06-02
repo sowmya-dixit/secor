@@ -97,10 +97,11 @@ public class ChannelDateMessageParser extends MessageParser {
 					String channel = rawChannelStr.replaceAll(channelScrubRegex, "");
 
 					
-					String path = basePath + channel + "/"   ;
+					String path = basePath + channel + "/";
 					result[0] = prefixEnabled ? path + getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat) : path + outputFormatter.format(dateFormat);
 					return result;
 				} catch (Exception e) {
+					e.printStackTrace();
 					LOG.warn("Impossible to convert date = " + fieldValue.toString() + " for the input pattern = "
 							+ inputPattern.toString() + ". Using date default=" + result[0]);
 				}

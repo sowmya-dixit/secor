@@ -18,6 +18,7 @@ package com.pinterest.secor.parser;
  */
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -74,7 +75,7 @@ public class ChannelDateMessageParser extends MessageParser {
 		String basePath = mConfig.getS3Path();
 		JSONObject jsonObject = (JSONObject) JSONValue.parse(message.getPayload());
 		boolean prefixEnabled = mConfig.isPartitionPrefixEnabled();
-		String result[] = { prefixEnabled ? partitionPrefixMap.get("DEFAULT") + defaultDate : defaultDate };
+		String result[] = { defaultDate };
 
 		if (jsonObject != null) {
 			Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
@@ -91,14 +92,12 @@ public class ChannelDateMessageParser extends MessageParser {
 						SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
 						dateFormat = inputFormatter.parse(fieldValue.toString());
 					}
-					Map<String, Object> context = (HashMap<String, Object>) jsonObject.get("context");
-
-					String rawChannelStr = (String) context.get("channel");
-					String channel = rawChannelStr.replaceAll(channelScrubRegex, "");
-
 					
+					String channel = getChannel(jsonObject);
+
 					String path = basePath + channel + "/";
 					result[0] = prefixEnabled ? path + getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat) : path + outputFormatter.format(dateFormat);
+					System.out.println("S3 Path: " + Arrays.toString(result));
 					return result;
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -110,7 +109,8 @@ public class ChannelDateMessageParser extends MessageParser {
 
 		return result;
 	}
-
+	
+	
 	private String getPrefix(String prefixIdentifier) {
 		int subStrIndex = prefixIdentifier.lastIndexOf("_");
 		String prefix = partitionPrefixMap.get(prefixIdentifier.substring(subStrIndex));
@@ -118,5 +118,18 @@ public class ChannelDateMessageParser extends MessageParser {
 			prefix = partitionPrefixMap.get("DEFAULT");
 		return prefix;
 	}
-
+	
+	private String getChannel(JSONObject jsonObject){
+		String rawChannelStr = "in.ekstep";
+		Map<String, Object> dimensions = (HashMap<String, Object>) jsonObject.get("dimensions");
+		if (jsonObject.get("channel") != null) {
+			rawChannelStr = (String) jsonObject.get("channel");
+		} else if(dimensions!=null && dimensions.get("channel")!=null) {
+			rawChannelStr = (String) dimensions.get("channel");
+		}else{
+			Map<String, Object> context = (HashMap<String, Object>) jsonObject.get("context");
+			rawChannelStr = (String) context.get("channel");
+		}
+		return rawChannelStr.replaceAll(channelScrubRegex, "");
+	}
 }

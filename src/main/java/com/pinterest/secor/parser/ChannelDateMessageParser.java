@@ -72,7 +72,6 @@ public class ChannelDateMessageParser extends MessageParser {
 	@Override
 	public String[] extractPartitions(Message message) {
 
-		String basePath = mConfig.getS3Path();
 		JSONObject jsonObject = (JSONObject) JSONValue.parse(message.getPayload());
 		boolean prefixEnabled = mConfig.isPartitionPrefixEnabled();
 		String result[] = { defaultDate };
@@ -95,7 +94,7 @@ public class ChannelDateMessageParser extends MessageParser {
 					
 					String channel = getChannel(jsonObject);
 
-					String path = basePath + channel + "/";
+					String path =  channel + "/";
 					result[0] = prefixEnabled ? path + getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat) : path + outputFormatter.format(dateFormat);
 					System.out.println("S3 Path: " + Arrays.toString(result));
 					return result;

@@ -78,6 +78,9 @@ public class ChannelDateMessageParser extends MessageParser {
 
 		if (jsonObject != null) {
 			Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
+        	if(fieldValue == null){
+        		fieldValue = jsonObject.get(mConfig.getMessageEtsName());
+        	}
 			Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
 			Object inputPattern = mConfig.getMessageTimestampInputPattern();
 			if (fieldValue != null && inputPattern != null) {

@@ -69,7 +69,12 @@ public class PatternDateMessageParser extends MessageParser {
         boolean prefixEnabled = mConfig.isPartitionPrefixEnabled();
         String result[] = { prefixEnabled ? partitionPrefixMap.get("DEFAULT") + defaultDate : defaultDate };
         if (jsonObject != null) {
-            Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
+            
+        	Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
+        	if(fieldValue == null){
+        		fieldValue = jsonObject.get(mConfig.getMessageEtsName());
+        	}
+        	
             Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
             Object inputPattern = mConfig.getMessageTimestampInputPattern();
             if (fieldValue != null && inputPattern != null) {

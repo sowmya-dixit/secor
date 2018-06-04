@@ -72,7 +72,7 @@ public class PatternDateMessageParser extends MessageParser {
             
         	Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
         	if(fieldValue == null){
-        		fieldValue = jsonObject.get(mConfig.getMessageEtsName());
+        		fieldValue = System.currentTimeMillis();
         	}
         	
             Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());

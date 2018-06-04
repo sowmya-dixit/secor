@@ -77,11 +77,13 @@ public class ChannelDateMessageParser extends MessageParser {
 		String result[] = { defaultDate };
 
 		if (jsonObject != null) {
+			
+			if(!jsonObject.containsKey("@timestamp") && !jsonObject.containsKey("syncts")){
+				jsonObject.put("@timestamp", System.currentTimeMillis());
+			}
+			
 			Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
-        	if(fieldValue == null){
-        		fieldValue = System.currentTimeMillis();
-        	}
-			Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
+        	Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
 			Object inputPattern = mConfig.getMessageTimestampInputPattern();
 			if (fieldValue != null && inputPattern != null) {
 				try {

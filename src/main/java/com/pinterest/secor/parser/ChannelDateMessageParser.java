@@ -79,6 +79,7 @@ public class ChannelDateMessageParser extends MessageParser {
 		if (jsonObject != null) {
 			
 			if(!jsonObject.containsKey("@timestamp") && !jsonObject.containsKey("syncts")){
+				LOG.info("Adding '@timestamp'to raw telemetry");
 				jsonObject.put("@timestamp", System.currentTimeMillis());
 			}
 			

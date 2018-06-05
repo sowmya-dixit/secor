@@ -78,9 +78,9 @@ public class ChannelDateMessageParser extends MessageParser {
 
 		if (jsonObject != null) {
 			
-			if(!jsonObject.containsKey("@timestamp") && !jsonObject.containsKey("syncts")){
-				LOG.info("Adding '@timestamp'to raw telemetry");
-				jsonObject.put("@timestamp", System.currentTimeMillis());
+			if(!jsonObject.containsKey(mConfig.getMessageTimestampName())){
+				LOG.info("Adding "+mConfig.getMessageTimestampName()+ " to raw telemetry");
+				jsonObject.put(mConfig.getMessageTimestampName(), System.currentTimeMillis());
 			}
 			
 			Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());

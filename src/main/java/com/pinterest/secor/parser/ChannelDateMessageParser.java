@@ -102,7 +102,7 @@ public class ChannelDateMessageParser extends MessageParser {
 				} catch (Exception e) {
 					e.printStackTrace();
 					LOG.warn("Impossible to convert date = " + fieldValue.toString() + " for the input pattern = "
-							+ inputPattern.toString() + ". Using date default=" + result[0]);
+							+ inputPattern.toString() + ". Using date default=" + result[0] + " - "+ e.getMessage());
 				}
 			}
 		}

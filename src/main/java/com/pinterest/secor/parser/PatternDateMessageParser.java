@@ -74,10 +74,6 @@ public class PatternDateMessageParser extends MessageParser {
 		String result[] = { prefixEnabled ? partitionPrefixMap.get("DEFAULT") + defaultDate : defaultDate };
 		if (jsonObject != null) {
 
-			if(!jsonObject.containsKey(mConfig.getMessageTimestampName())){
-				LOG.info("Adding "+mConfig.getMessageTimestampName()+ " to raw telemetry");
-				jsonObject.put(mConfig.getMessageTimestampName(), System.currentTimeMillis());
-			}
 			Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
 			Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
 			Object inputPattern = mConfig.getMessageTimestampInputPattern();

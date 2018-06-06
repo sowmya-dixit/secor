@@ -78,11 +78,6 @@ public class ChannelDateMessageParser extends MessageParser {
 
 		if (jsonObject != null) {
 			
-			if(!jsonObject.containsKey(mConfig.getMessageTimestampName())){
-				LOG.info("Adding "+mConfig.getMessageTimestampName()+ " to raw telemetry");
-				jsonObject.put(mConfig.getMessageTimestampName(), System.currentTimeMillis());
-			}
-			
 			Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
         	Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
 			Object inputPattern = mConfig.getMessageTimestampInputPattern();

@@ -83,8 +83,7 @@ public class ChannelDateMessageParser extends MessageParser {
 			Object inputPattern = mConfig.getMessageTimestampInputPattern();
 			if (fieldValue != null && inputPattern != null) {
 				try {
-					SimpleDateFormat outputFormatter = new SimpleDateFormat(
-							StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
+					SimpleDateFormat outputFormatter = new SimpleDateFormat(StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
 					Date dateFormat = null;
 					if (fieldValue instanceof Number) {
 						dateFormat = new Date(((Number) fieldValue).longValue());
@@ -125,7 +124,8 @@ public class ChannelDateMessageParser extends MessageParser {
 		String rawChannelStr = "in.ekstep";
 		Map<String, Object> dimensions = (HashMap<String, Object>) jsonObject.get("dimensions");
 		
-		if (jsonObject.get("channel") != null) {
+		String channel = (String)jsonObject.get("channel"); 
+		if (channel != null && !channel.isEmpty()) {
 			rawChannelStr = (String) jsonObject.get("channel");
 		} else if(dimensions!=null && dimensions.get("channel")!=null) {
 			rawChannelStr = (String) dimensions.get("channel");

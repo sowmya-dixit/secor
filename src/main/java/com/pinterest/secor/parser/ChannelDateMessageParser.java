@@ -92,13 +92,10 @@ public class ChannelDateMessageParser extends MessageParser {
 						dateFormat = inputFormatter.parse(fieldValue.toString());
 					}
 					
-					System.out.println("Getting Channel ID");
 					String channel = getChannel(jsonObject);
-					System.out.println("channel: "+ channel);
-
+					
 					String path =  channel + "/";
 					result[0] = prefixEnabled ? path + getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat) : path + outputFormatter.format(dateFormat);
-					System.out.println("S3 Path: " + Arrays.toString(result));
 					return result;
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -113,10 +110,15 @@ public class ChannelDateMessageParser extends MessageParser {
 	
 	
 	private String getPrefix(String prefixIdentifier) {
-		int subStrIndex = prefixIdentifier.lastIndexOf("_");
-		String prefix = partitionPrefixMap.get(prefixIdentifier.substring(subStrIndex));
-		if (StringUtils.isBlank(prefix))
-			prefix = partitionPrefixMap.get("DEFAULT");
+		String prefix = "others";
+		if(prefixIdentifier!=null && !prefixIdentifier.isEmpty()){
+			if(prefixIdentifier.contains("_")){
+				int subStrIndex = prefixIdentifier.lastIndexOf("_");
+				prefix = partitionPrefixMap.get(prefixIdentifier.substring(subStrIndex));
+			}else {
+				prefix = partitionPrefixMap.get("DEFAULT");
+			}
+		}
 		return prefix;
 	}
 	
@@ -125,15 +127,13 @@ public class ChannelDateMessageParser extends MessageParser {
 		Map<String, Object> dimensions = (HashMap<String, Object>) jsonObject.get("dimensions");
 		
 		String channel = (String)jsonObject.get("channel"); 
-		if (channel != null && !channel.isEmpty()) {
+		if (channel != null && channel.isEmpty()) {
 			rawChannelStr = (String) jsonObject.get("channel");
 		} else if(dimensions!=null && dimensions.get("channel")!=null) {
 			rawChannelStr = (String) dimensions.get("channel");
 		}else{
-			System.out.println("Getting Channel for Raw event: ");
 			Map<String, Object> context = (HashMap<String, Object>) jsonObject.get("context");
 			rawChannelStr = (String) context.get("channel");
-			System.out.println("rawChannelStr: "+ rawChannelStr);
 		}
 		return rawChannelStr.replaceAll(channelScrubRegex, "");
 	}

@@ -110,15 +110,9 @@ public class ChannelDateMessageParser extends MessageParser {
 	
 	
 	private String getPrefix(String prefixIdentifier) {
-		String prefix = "others";
-		if(prefixIdentifier!=null && !prefixIdentifier.isEmpty()){
-			if(prefixIdentifier.contains("_")){
-				int subStrIndex = prefixIdentifier.lastIndexOf("_");
-				prefix = partitionPrefixMap.get(prefixIdentifier.substring(subStrIndex));
-			}else {
-				prefix = partitionPrefixMap.get("DEFAULT");
-			}
-		}
+		String prefix = partitionPrefixMap.get(prefixIdentifier);
+		if (StringUtils.isBlank(prefix))
+			prefix = partitionPrefixMap.get("DEFAULT");
 		return prefix;
 	}
 	

@@ -121,7 +121,7 @@ public class ChannelDateMessageParser extends MessageParser {
 			prefix = partitionPrefixMap.get("DEFAULT");
 		}
 		else{
-			prefix = "others";
+			prefix = "others/";
 		}
 		return prefix;
 	}

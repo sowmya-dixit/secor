@@ -109,6 +109,7 @@ public class PatternDateMessageParser extends MessageParser {
 		String prefix = partitionPrefixMap.get(prefixIdentifier);
 		if (StringUtils.isBlank(prefix))
 			prefix = partitionPrefixMap.get("DEFAULT");
+		if(null == prefix) return "";
 		return prefix;
 	}
 

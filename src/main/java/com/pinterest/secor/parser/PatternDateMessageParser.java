@@ -75,10 +75,11 @@ public class PatternDateMessageParser extends MessageParser {
 		if (jsonObject != null) {
 
 			Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
-			if(fieldValue==null){
+			if (fieldValue == null)
+				fieldValue = jsonObject.get(mConfig.getFallbackMessageTimestampName());
+			if (fieldValue == null)
 				fieldValue = System.currentTimeMillis();
-			}
-			
+
 			Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
 			Object inputPattern = mConfig.getMessageTimestampInputPattern();
 			if (fieldValue != null && inputPattern != null) {
@@ -108,7 +109,8 @@ public class PatternDateMessageParser extends MessageParser {
 		String prefix = partitionPrefixMap.get(prefixIdentifier);
 		if (StringUtils.isBlank(prefix))
 			prefix = partitionPrefixMap.get("DEFAULT");
-		if(null == prefix) prefix = "";
+		if (null == prefix)
+			prefix = "";
 		return prefix;
 	}
 

@@ -77,17 +77,19 @@ public class ChannelDateMessageParser extends MessageParser {
 		String result[] = { defaultDate };
 
 		if (jsonObject != null) {
-			
-			
+
 			Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
-			if(fieldValue==null){
+			if (fieldValue == null)
+				fieldValue = jsonObject.get(mConfig.getFallbackMessageTimestampName());
+			if (fieldValue == null)
 				fieldValue = System.currentTimeMillis();
-			}
-        	Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
+
+			Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
 			Object inputPattern = mConfig.getMessageTimestampInputPattern();
 			if (fieldValue != null && inputPattern != null) {
 				try {
-					SimpleDateFormat outputFormatter = new SimpleDateFormat(StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
+					SimpleDateFormat outputFormatter = new SimpleDateFormat(
+							StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
 					Date dateFormat = null;
 					if (fieldValue instanceof Number) {
 						dateFormat = new Date(((Number) fieldValue).longValue());
@@ -95,11 +97,13 @@ public class ChannelDateMessageParser extends MessageParser {
 						SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
 						dateFormat = inputFormatter.parse(fieldValue.toString());
 					}
-					
+
 					String channel = getChannel(jsonObject);
-					
-					String path =  channel + "/";
-					result[0] = prefixEnabled ? path + getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat) : path + outputFormatter.format(dateFormat);
+
+					String path = channel + "/";
+					result[0] = prefixEnabled
+							? path + getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat)
+							: path + outputFormatter.format(dateFormat);
 					return result;
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -110,30 +114,29 @@ public class ChannelDateMessageParser extends MessageParser {
 
 		return result;
 	}
-	
-	
+
 	private String getPrefix(String prefixIdentifier) {
 		String prefix = partitionPrefixMap.get(prefixIdentifier);
 		if (StringUtils.isBlank(prefix)) {
-			if(prefixIdentifier.contains("ME_")){
+			if (prefixIdentifier.contains("ME_")) {
 				prefix = "others/";
-			}else{
+			} else {
 				prefix = partitionPrefixMap.get("DEFAULT");
 			}
 		}
 		return prefix;
 	}
-	
-	private String getChannel(JSONObject jsonObject){
+
+	private String getChannel(JSONObject jsonObject) {
 		String rawChannelStr = "in.ekstep";
 		Map<String, Object> dimensions = (HashMap<String, Object>) jsonObject.get("dimensions");
-		
-		String channel = (String)jsonObject.get("channel"); 
+
+		String channel = (String) jsonObject.get("channel");
 		if (channel != null && channel.isEmpty()) {
 			rawChannelStr = (String) jsonObject.get("channel");
-		} else if(dimensions!=null && dimensions.get("channel")!=null) {
+		} else if (dimensions != null && dimensions.get("channel") != null) {
 			rawChannelStr = (String) dimensions.get("channel");
-		}else{
+		} else {
 			Map<String, Object> context = (HashMap<String, Object>) jsonObject.get("context");
 			rawChannelStr = (String) context.get("channel");
 		}

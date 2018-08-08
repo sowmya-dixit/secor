@@ -96,8 +96,7 @@ public class PatternDateMessageParser extends MessageParser {
 							: outputFormatter.format(dateFormat);
 					return result;
 				} catch (Exception e) {
-					LOG.warn("Impossible to convert date = " + fieldValue.toString() + " for the input pattern = "
-							+ inputPattern.toString() + ". Using date default=" + result[0]);
+					LOG.warn("Unable to get path: " + e.getMessage());
 				}
 			}
 		}

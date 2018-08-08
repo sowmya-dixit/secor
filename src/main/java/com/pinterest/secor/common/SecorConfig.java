@@ -374,9 +374,13 @@ public class SecorConfig {
     }
 
     public String getMessageTimestampName() {
-        return getString("message.timestamp.name");
+    	return getString("message.timestamp.name");
     }
-
+    
+    public String getFallbackMessageTimestampName() {
+    	return getString("message.fallback.timestamp.name");
+    }
+    
     public String getMessageTimestampNameSeparator() {
         return getString("message.timestamp.name.separator");
     }

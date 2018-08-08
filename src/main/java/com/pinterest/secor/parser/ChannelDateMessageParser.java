@@ -17,8 +17,8 @@ package com.pinterest.secor.parser;
  * limitations under the License.
  */
 
-
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,10 +35,14 @@ import com.pinterest.secor.common.SecorConfig;
 import com.pinterest.secor.message.Message;
 
 /**
- * ChannelDateMessageParser extracts timestamp field (specified by 'message.timestamp.name') and the date pattern (specified by 'message.timestamp.input.pattern').
- * The output file pattern is fetched from the property 'secor.partition.output_dt_format'.
+ * ChannelDateMessageParser extracts timestamp field (specified by
+ * 'message.timestamp.name') and the date pattern (specified by
+ * 'message.timestamp.input.pattern'). The output file pattern is fetched from
+ * the property 'secor.partition.output_dt_format'.
  * 
- * This generic class can even handle the DateMessageParse functionality. For ex: it will generate the same partition when the 'secor.partition.output_dt_format' property is set to "'dt='yyyy-MM-dd"
+ * This generic class can even handle the DateMessageParse functionality. For
+ * ex: it will generate the same partition when the
+ * 'secor.partition.output_dt_format' property is set to "'dt='yyyy-MM-dd"
  * 
  * @see http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
  * 
@@ -46,70 +50,93 @@ import com.pinterest.secor.message.Message;
  * 
  */
 public class ChannelDateMessageParser extends MessageParser {
-    
+
 	private static final Logger LOG = LoggerFactory.getLogger(PatternDateMessageParser.class);
-    protected static final String defaultDate = "1970-01-01";
-    protected static final String defaultFormatter = "yyyy-MM-dd";
-    private Map<String, String> partitionPrefixMap;
-    private static final String channelScrubRegex = "[^a-zA-Z0-9._$-]";
+	protected static final String defaultDate = "1970-01-01";
+	protected static final String defaultFormatter = "yyyy-MM-dd";
+	private Map<String, String> partitionPrefixMap;
+	private static final String channelScrubRegex = "[^a-zA-Z0-9._$-]";
 
-    public ChannelDateMessageParser(SecorConfig config) {
-        super(config);
-        partitionPrefixMap = new HashMap<String, String>();
-        String partitionMapping = config.getPartitionPrefixMapping();
-        if(null != partitionMapping) {
-	        JSONObject jsonObject = (JSONObject) JSONValue.parse(partitionMapping);
-	        for(Entry<String, Object> entry: jsonObject.entrySet()) {
-	        	partitionPrefixMap.put(entry.getKey(), entry.getValue().toString() + "/");
-	        }
-        }
-    }
+	public ChannelDateMessageParser(SecorConfig config) {
+		super(config);
+		partitionPrefixMap = new HashMap<String, String>();
+		String partitionMapping = config.getPartitionPrefixMapping();
+		if (null != partitionMapping) {
+			JSONObject jsonObject = (JSONObject) JSONValue.parse(partitionMapping);
+			for (Entry<String, Object> entry : jsonObject.entrySet()) {
+				partitionPrefixMap.put(entry.getKey(), entry.getValue().toString() + "/");
+			}
+		}
+	}
 
-    @Override
-    public String[] extractPartitions(Message message) {
+	@Override
+	public String[] extractPartitions(Message message) {
 
-        JSONObject jsonObject = (JSONObject) JSONValue.parse(message.getPayload());
-        boolean prefixEnabled = mConfig.isPartitionPrefixEnabled();
-        String result[] = { prefixEnabled ? partitionPrefixMap.get("DEFAULT") + defaultDate : defaultDate };
-        
-        if (jsonObject != null) {
-            Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
-            Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
-            Object inputPattern = mConfig.getMessageTimestampInputPattern();
-            if (fieldValue != null && inputPattern != null) {
-                try {
-                	SimpleDateFormat outputFormatter = new SimpleDateFormat(StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
-                	Date dateFormat = null;
-                	if(fieldValue instanceof Number) {
-                		dateFormat = new Date(((Number)fieldValue).longValue());
-                	} else {
-                		SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
-                		dateFormat = inputFormatter.parse(fieldValue.toString());
-                	}
-                    Map<String, Object> context = (HashMap<String, Object>)jsonObject.get("context");
-                    
-                    String rawChannelStr = (String) context.get("channel");
-                    String channel = rawChannelStr.replaceAll(channelScrubRegex, "");
-                    System.out.println("raw channel: "+ rawChannelStr + "& After scrubbed: "+ channel);
-                    
-                    String path = "channel-exhaust/" + channel + "/" + outputFormatter.format(dateFormat);
-                    result[0] = prefixEnabled ? getPrefix(eventValue.toString()) + path : path;
-                    return result;
-                } catch (Exception e) {
-                    LOG.warn("Impossible to convert date = " + fieldValue.toString()
-                            + " for the input pattern = " + inputPattern.toString()
-                            + ". Using date default=" + result[0]);
-                }
-            }
-        }
+		JSONObject jsonObject = (JSONObject) JSONValue.parse(message.getPayload());
+		boolean prefixEnabled = mConfig.isPartitionPrefixEnabled();
+		String result[] = { defaultDate };
 
-        return result;
-    }
-    
-    private String getPrefix(String prefixIdentifier) {
-    	 String prefix = partitionPrefixMap.get(prefixIdentifier);
-    	 if (StringUtils.isBlank(prefix)) prefix = partitionPrefixMap.get("DEFAULT");
-    	 return prefix;
-    }
-    
+		if (jsonObject != null) {
+			
+			
+			Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
+			if(fieldValue==null){
+				fieldValue = System.currentTimeMillis();
+			}
+        	Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
+			Object inputPattern = mConfig.getMessageTimestampInputPattern();
+			if (fieldValue != null && inputPattern != null) {
+				try {
+					SimpleDateFormat outputFormatter = new SimpleDateFormat(StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
+					Date dateFormat = null;
+					if (fieldValue instanceof Number) {
+						dateFormat = new Date(((Number) fieldValue).longValue());
+					} else {
+						SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
+						dateFormat = inputFormatter.parse(fieldValue.toString());
+					}
+					
+					String channel = getChannel(jsonObject);
+					
+					String path =  channel + "/";
+					result[0] = prefixEnabled ? path + getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat) : path + outputFormatter.format(dateFormat);
+					return result;
+				} catch (Exception e) {
+					e.printStackTrace();
+					LOG.warn("Unable to get path: " + e.getMessage());
+				}
+			}
+		}
+
+		return result;
+	}
+	
+	
+	private String getPrefix(String prefixIdentifier) {
+		String prefix = partitionPrefixMap.get(prefixIdentifier);
+		if (StringUtils.isBlank(prefix)) {
+			if(prefixIdentifier.contains("ME_")){
+				prefix = "others/";
+			}else{
+				prefix = partitionPrefixMap.get("DEFAULT");
+			}
+		}
+		return prefix;
+	}
+	
+	private String getChannel(JSONObject jsonObject){
+		String rawChannelStr = "in.ekstep";
+		Map<String, Object> dimensions = (HashMap<String, Object>) jsonObject.get("dimensions");
+		
+		String channel = (String)jsonObject.get("channel"); 
+		if (channel != null && channel.isEmpty()) {
+			rawChannelStr = (String) jsonObject.get("channel");
+		} else if(dimensions!=null && dimensions.get("channel")!=null) {
+			rawChannelStr = (String) dimensions.get("channel");
+		}else{
+			Map<String, Object> context = (HashMap<String, Object>) jsonObject.get("context");
+			rawChannelStr = (String) context.get("channel");
+		}
+		return rawChannelStr.replaceAll(channelScrubRegex, "");
+	}
 }

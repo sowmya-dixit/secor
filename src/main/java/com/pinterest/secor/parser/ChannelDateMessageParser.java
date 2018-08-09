@@ -128,17 +128,19 @@ public class ChannelDateMessageParser extends MessageParser {
 	}
 
 	private String getChannel(JSONObject jsonObject) {
-		String rawChannelStr = "in.ekstep";
+		String rawChannelStr = "";
 		Map<String, Object> dimensions = (HashMap<String, Object>) jsonObject.get("dimensions");
-
+		Map<String, Object> context = (HashMap<String, Object>) jsonObject.get("context");
+		
 		String channel = (String) jsonObject.get("channel");
 		if (channel != null && !channel.isEmpty()) {
 			rawChannelStr = channel;
 		} else if (dimensions != null && dimensions.get("channel") != null) {
 			rawChannelStr = (String) dimensions.get("channel");
-		} else {
-			Map<String, Object> context = (HashMap<String, Object>) jsonObject.get("context");
+		} else if(context != null && context.get("channel") != null){
 			rawChannelStr = (String) context.get("channel");
+		}else {
+			rawChannelStr = "in.ekstep";
 		}
 		return rawChannelStr.replaceAll(channelScrubRegex, "");
 	}

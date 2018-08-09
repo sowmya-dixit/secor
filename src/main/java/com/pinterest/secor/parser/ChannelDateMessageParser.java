@@ -132,8 +132,8 @@ public class ChannelDateMessageParser extends MessageParser {
 		Map<String, Object> dimensions = (HashMap<String, Object>) jsonObject.get("dimensions");
 
 		String channel = (String) jsonObject.get("channel");
-		if (channel != null && channel.isEmpty()) {
-			rawChannelStr = (String) jsonObject.get("channel");
+		if (channel != null && !channel.isEmpty()) {
+			rawChannelStr = channel;
 		} else if (dimensions != null && dimensions.get("channel") != null) {
 			rawChannelStr = (String) dimensions.get("channel");
 		} else {

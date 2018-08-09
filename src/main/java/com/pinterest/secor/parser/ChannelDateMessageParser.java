@@ -107,7 +107,7 @@ public class ChannelDateMessageParser extends MessageParser {
 					return result;
 				} catch (Exception e) {
 					e.printStackTrace();
-					LOG.warn("Unable to get path: " + e.getMessage());
+					LOG.warn("Unable to get path: " + e.getMessage() +" - " + message.getPayload());
 				}
 			}
 		}

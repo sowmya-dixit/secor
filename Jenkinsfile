@@ -17,13 +17,12 @@ node('build-slave') {
                 sh """
                         mkdir secor_artifacts
                         cp target/secor-0.24-SNAPSHOT-bin.tar.gz secor_artifacts
-                        zip -r secor_artifacts.zip:${artifact_version} secor_artifacts
-                        rm -rf secor_artifacts
+                        zip -j secor_artifacts.zip:${artifact_version} secor_artifacts
                     """
                 archiveArtifacts artifacts: "secor_artifacts.zip:${artifact_version}", fingerprint: true, onlyIfSuccessful: true
                 sh """echo {\\"artifact_name\\" : \\"secor_artifacts.zip\\", \\"artifact_version\\" : \\"${artifact_version}\\", \\"node_name\\" : \\"${env.NODE_NAME}\\"} > metadata.json"""
                 archiveArtifacts artifacts: 'metadata.json', onlyIfSuccessful: true
-                sh "rm secor_artifacts.zip:${artifact_version}"
+               
             }
         }
     }

@@ -6,19 +6,21 @@ node('build-slave') {
         String ANSI_RED = "\u001B[31m"
         String ANSI_YELLOW = "\u001B[33m"
 
-        ansiColor('xterm') {
+         ansiColor('xterm') {
             stage('Checkout') {
                 cleanWs()
-                if(params.tag == ""){
+                if(params.github_release_tag == ""){
                     checkout scm
                     commit_hash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     branch_name = sh(script: 'git name-rev --name-only HEAD | rev | cut -d "/" -f1| rev', returnStdout: true).trim()
                     artifact_version = branch_name + "_" + commit_hash
+                    println(ANSI_BOLD + ANSI_YELLOW + "Tag not specified, using the latest commit hash: " + commit_hash + ANSI_NORMAL)
                 }
                 else {
                     def scmVars = checkout scm
-                    checkout scm: [$class: 'GitSCM', branches: [[name: "refs/tags/$params.tag"]],  userRemoteConfigs: [[url: scmVars.GIT_URL]]]
-                    artifact_version = params.tag
+                    checkout scm: [$class: 'GitSCM', branches: [[name: "refs/tags/$params.github_release_tag"]],  userRemoteConfigs: [[url: scmVars.GIT_URL]]]
+                    artifact_version = params.githib_release_tag
+                    println(ANSI_BOLD + ANSI_YELLOW + "Tag specified, building from tag: " + params.github_release_tag + ANSI_NORMAL)
                 }
                 echo "artifact_version: "+ artifact_version
             }
@@ -38,6 +40,7 @@ node('build-slave') {
                 archiveArtifacts artifacts: "secor_artifacts.zip:${artifact_version}", fingerprint: true, onlyIfSuccessful: true
                 sh """echo {\\"artifact_name\\" : \\"secor_artifacts.zip\\", \\"artifact_version\\" : \\"${artifact_version}\\", \\"node_name\\" : \\"${env.NODE_NAME}\\"} > metadata.json"""
                 archiveArtifacts artifacts: 'metadata.json', onlyIfSuccessful: true
+                currentBuild.description = "${artifact_version}"
             }
         }
 

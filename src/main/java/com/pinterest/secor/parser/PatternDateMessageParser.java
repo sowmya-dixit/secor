@@ -17,9 +17,7 @@
 package com.pinterest.secor.parser;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import net.minidev.json.JSONObject;
@@ -53,10 +51,16 @@ public class PatternDateMessageParser extends MessageParser {
 	protected static final String defaultDate = "1970-01-01";
 	protected static final String defaultFormatter = "yyyy-MM-dd";
 	private Map<String, String> partitionPrefixMap;
+	private SimpleDateFormat outputFormatter;
+	private TimeZone messageTimeZone;
 
 	public PatternDateMessageParser(SecorConfig config) {
 		super(config);
-		partitionPrefixMap = new HashMap<String, String>();
+		messageTimeZone = config.getMessageTimeZone();
+		outputFormatter = new SimpleDateFormat(
+				StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
+		outputFormatter.setTimeZone(config.getTimeZone());
+		partitionPrefixMap = new HashMap<>();
 		String partitionMapping = config.getPartitionPrefixMapping();
 		if (null != partitionMapping) {
 			JSONObject jsonObject = (JSONObject) JSONValue.parse(partitionMapping);
@@ -73,7 +77,6 @@ public class PatternDateMessageParser extends MessageParser {
 		boolean prefixEnabled = mConfig.isPartitionPrefixEnabled();
 		String result[] = { prefixEnabled ? partitionPrefixMap.get("DEFAULT") + defaultDate : defaultDate };
 		if (jsonObject != null) {
-
 			Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
 			if (fieldValue == null)
 				fieldValue = jsonObject.get(mConfig.getFallbackMessageTimestampName());
@@ -82,21 +85,25 @@ public class PatternDateMessageParser extends MessageParser {
 
 			Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
 			Object inputPattern = mConfig.getMessageTimestampInputPattern();
-			if (fieldValue != null && inputPattern != null) {
+			if (inputPattern != null) {
 				try {
+					/*
 					SimpleDateFormat outputFormatter = new SimpleDateFormat(
 							StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
-					Date dateFormat = null;
+							*/
+					Date dateFormat;
 					if (fieldValue instanceof Number) {
 						dateFormat = new Date(((Number) fieldValue).longValue());
 					} else {
 						SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
+						inputFormatter.setTimeZone(messageTimeZone);
 						dateFormat = inputFormatter.parse(fieldValue.toString());
 					}
 					result[0] = prefixEnabled ? getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat)
 							: outputFormatter.format(dateFormat);
 					return result;
 				} catch (Exception e) {
+					e.printStackTrace();
 					LOG.warn("Unable to get path: " + e.getMessage());
 				}
 			}

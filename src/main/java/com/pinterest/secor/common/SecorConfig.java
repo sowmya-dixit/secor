@@ -533,6 +533,11 @@ public class SecorConfig {
         return Strings.isNullOrEmpty(timezone) ? TimeZone.getTimeZone("UTC") : TimeZone.getTimeZone(timezone);
     }
 
+    public TimeZone getMessageTimeZone() {
+        String timezone = getString("secor.message.timezone");
+        return Strings.isNullOrEmpty(timezone) ? TimeZone.getTimeZone("UTC") : TimeZone.getTimeZone(timezone);
+    }
+
     public boolean getBoolean(String name, boolean defaultValue) {
         return mProperties.getBoolean(name, defaultValue);
     }

@@ -18,10 +18,7 @@ package com.pinterest.secor.parser;
  */
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import net.minidev.json.JSONObject;
@@ -56,10 +53,16 @@ public class ChannelDateMessageParser extends MessageParser {
 	protected static final String defaultFormatter = "yyyy-MM-dd";
 	private Map<String, String> partitionPrefixMap;
 	private static final String channelScrubRegex = "[^a-zA-Z0-9._$-]";
+	private SimpleDateFormat outputFormatter;
+	private TimeZone messageTimeZone;
 
 	public ChannelDateMessageParser(SecorConfig config) {
 		super(config);
-		partitionPrefixMap = new HashMap<String, String>();
+		messageTimeZone = mConfig.getMessageTimeZone();
+		outputFormatter = new SimpleDateFormat(
+				StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
+		outputFormatter.setTimeZone(mConfig.getTimeZone());
+		partitionPrefixMap = new HashMap<>();
 		String partitionMapping = config.getPartitionPrefixMapping();
 		if (null != partitionMapping) {
 			JSONObject jsonObject = (JSONObject) JSONValue.parse(partitionMapping);
@@ -74,7 +77,7 @@ public class ChannelDateMessageParser extends MessageParser {
 
 		JSONObject jsonObject = (JSONObject) JSONValue.parse(message.getPayload());
 		boolean prefixEnabled = mConfig.isPartitionPrefixEnabled();
-		String result[] = { defaultDate };
+		String result[] = {defaultDate};
 
 		if (jsonObject != null) {
 
@@ -86,15 +89,18 @@ public class ChannelDateMessageParser extends MessageParser {
 
 			Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
 			Object inputPattern = mConfig.getMessageTimestampInputPattern();
-			if (fieldValue != null && inputPattern != null) {
+			if (inputPattern != null) {
 				try {
+					/*
 					SimpleDateFormat outputFormatter = new SimpleDateFormat(
 							StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
-					Date dateFormat = null;
+					*/
+					Date dateFormat;
 					if (fieldValue instanceof Number) {
 						dateFormat = new Date(((Number) fieldValue).longValue());
 					} else {
 						SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
+						inputFormatter.setTimeZone(messageTimeZone);
 						dateFormat = inputFormatter.parse(fieldValue.toString());
 					}
 
@@ -107,7 +113,7 @@ public class ChannelDateMessageParser extends MessageParser {
 					return result;
 				} catch (Exception e) {
 					e.printStackTrace();
-					LOG.warn("Unable to get path: " + e.getMessage() +" - " + message.getPayload());
+					LOG.warn("Unable to get path: " + e.getMessage() + " - " + message.getPayload());
 				}
 			}
 		}
@@ -131,15 +137,15 @@ public class ChannelDateMessageParser extends MessageParser {
 		String rawChannelStr = "";
 		Map<String, Object> dimensions = (HashMap<String, Object>) jsonObject.get("dimensions");
 		Map<String, Object> context = (HashMap<String, Object>) jsonObject.get("context");
-		
+
 		String channel = (String) jsonObject.get("channel");
 		if (channel != null && !channel.isEmpty()) {
 			rawChannelStr = channel;
 		} else if (dimensions != null && dimensions.get("channel") != null) {
 			rawChannelStr = (String) dimensions.get("channel");
-		} else if(context != null && context.get("channel") != null){
+		} else if (context != null && context.get("channel") != null) {
 			rawChannelStr = (String) context.get("channel");
-		}else {
+		} else {
 			rawChannelStr = "in.ekstep";
 		}
 		return rawChannelStr.replaceAll(channelScrubRegex, "");

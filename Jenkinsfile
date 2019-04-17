@@ -19,7 +19,7 @@ node('build-slave') {
                 else {
                     def scmVars = checkout scm
                     checkout scm: [$class: 'GitSCM', branches: [[name: "refs/tags/$params.github_release_tag"]],  userRemoteConfigs: [[url: scmVars.GIT_URL]]]
-                    artifact_version = params.githib_release_tag
+                    artifact_version = params.github_release_tag
                     println(ANSI_BOLD + ANSI_YELLOW + "Tag specified, building from tag: " + params.github_release_tag + ANSI_NORMAL)
                 }
                 echo "artifact_version: "+ artifact_version

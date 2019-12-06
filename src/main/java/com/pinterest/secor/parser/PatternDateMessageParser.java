@@ -73,43 +73,53 @@ public class PatternDateMessageParser extends MessageParser {
 	@Override
 	public String[] extractPartitions(Message message) {
 
-		JSONObject jsonObject = (JSONObject) JSONValue.parse(message.getPayload());
 		boolean prefixEnabled = mConfig.isPartitionPrefixEnabled();
-		String result[] = { prefixEnabled ? partitionPrefixMap.get("DEFAULT") + defaultDate : defaultDate };
-		if (jsonObject != null) {
-			Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
-			if (fieldValue == null)
-				fieldValue = jsonObject.get(mConfig.getFallbackMessageTimestampName());
-			if (fieldValue == null)
-				fieldValue = System.currentTimeMillis();
+		String result[] = {prefixEnabled ? partitionPrefixMap.get("DEFAULT") + defaultDate : defaultDate};
+		try {
+			JSONObject jsonObject = (JSONObject) JSONValue.parse(message.getPayload());
+			if (jsonObject != null) {
+				Object fieldValue = jsonObject.get(mConfig.getMessageTimestampName());
+				if (fieldValue == null)
+					fieldValue = jsonObject.get(mConfig.getFallbackMessageTimestampName());
+				if (fieldValue == null)
+					fieldValue = System.currentTimeMillis();
 
-			Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
-			Object inputPattern = mConfig.getMessageTimestampInputPattern();
-			if (inputPattern != null) {
-				try {
+				Object eventValue = jsonObject.get(mConfig.getPartitionPrefixIdentifier());
+				Object inputPattern = mConfig.getMessageTimestampInputPattern();
+				if (inputPattern != null) {
+					try {
 					/*
 					SimpleDateFormat outputFormatter = new SimpleDateFormat(
 							StringUtils.defaultIfBlank(mConfig.getPartitionOutputDtFormat(), defaultFormatter));
 							*/
-					Date dateFormat;
-					if (fieldValue instanceof Number) {
-						dateFormat = new Date(((Number) fieldValue).longValue());
-					} else {
-						SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
-						inputFormatter.setTimeZone(messageTimeZone);
-						dateFormat = inputFormatter.parse(fieldValue.toString());
+						Date dateFormat;
+						if (fieldValue instanceof Number) {
+							dateFormat = new Date(((Number) fieldValue).longValue());
+						} else {
+							SimpleDateFormat inputFormatter = new SimpleDateFormat(inputPattern.toString());
+							inputFormatter.setTimeZone(messageTimeZone);
+							dateFormat = inputFormatter.parse(fieldValue.toString());
+						}
+						result[0] = prefixEnabled ? getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat)
+								: outputFormatter.format(dateFormat);
+						return result;
+					} catch (Exception e) {
+						e.printStackTrace();
+						LOG.info("PatternDateMessageParser: Exception while parsing date " + e.getMessage());
+						LOG.warn("Unable to get path: " + e.getMessage());
 					}
-					result[0] = prefixEnabled ? getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat)
-							: outputFormatter.format(dateFormat);
-					return result;
-				} catch (Exception e) {
-					e.printStackTrace();
-					LOG.warn("Unable to get path: " + e.getMessage());
 				}
+			} else {
+				LOG.info("PatternDateMessageParser: Unable to parse json object " + jsonObject);
 			}
+			return result;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			LOG.info("PatternDateMessageParser: Exception while parsing date " + e.getMessage());
+			return result;
 		}
 
-		return result;
 	}
 
 	private String getPrefix(String prefixIdentifier) {

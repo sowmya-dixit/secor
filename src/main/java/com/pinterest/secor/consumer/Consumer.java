@@ -153,7 +153,7 @@ public class Consumer extends Thread {
                 if (mUnparsableMessages > MAX_UNPARSABLE_MESSAGES) {
                     throw new RuntimeException("Failed to parse message " + rawMessage, e);
                 }
-                LOG.warn("Failed to parse message {}", rawMessage, e);
+                LOG.warn("Consumer: Failed to parse message {}", rawMessage, e);
             }
 
             if (parsedMessage != null) {
@@ -163,7 +163,7 @@ public class Consumer extends Thread {
                     mMetricCollector.metric("consumer.message_size_bytes", rawMessage.getPayload().length, rawMessage.getTopic());
                     mMetricCollector.increment("consumer.throughput_bytes", rawMessage.getPayload().length, rawMessage.getTopic());
                 } catch (Exception e) {
-                    throw new RuntimeException("Failed to write message " + parsedMessage, e);
+                    throw new RuntimeException("Consumer: Failed to write message " + parsedMessage, e);
                 }
             }
         }

@@ -108,7 +108,7 @@ public class ChannelDateMessageParser extends MessageParser {
 
 					String path = channel + "/";
 					result[0] = prefixEnabled
-							? path + getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat)
+							? getPrefix(eventValue.toString()) + path + outputFormatter.format(dateFormat)
 							: path + outputFormatter.format(dateFormat);
 					return result;
 				} catch (Exception e) {
@@ -135,18 +135,13 @@ public class ChannelDateMessageParser extends MessageParser {
 
 	private String getChannel(JSONObject jsonObject) {
 		String rawChannelStr = "";
-		Map<String, Object> dimensions = (HashMap<String, Object>) jsonObject.get("dimensions");
-		Map<String, Object> context = (HashMap<String, Object>) jsonObject.get("context");
+		Map<String, Object> derivedLocData = (HashMap<String, Object>) jsonObject.get("derivedlocationdata");
 
-		String channel = (String) jsonObject.get("channel");
-		if (channel != null && !channel.isEmpty()) {
-			rawChannelStr = channel;
-		} else if (dimensions != null && dimensions.get("channel") != null) {
-			rawChannelStr = (String) dimensions.get("channel");
-		} else if (context != null && context.get("channel") != null) {
-			rawChannelStr = (String) context.get("channel");
-		} else {
-			rawChannelStr = "in.ekstep";
+		if (derivedLocData != null && derivedLocData.get("state") != null) {
+			rawChannelStr = (String) derivedLocData.get("state");
+		}
+		else {
+			rawChannelStr = "others";
 		}
 		return rawChannelStr.replaceAll(channelScrubRegex, "");
 	}

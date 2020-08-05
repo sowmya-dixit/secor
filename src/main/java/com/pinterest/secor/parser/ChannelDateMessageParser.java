@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
 
@@ -135,12 +137,12 @@ public class ChannelDateMessageParser extends MessageParser {
 
 	private String getChannel(JSONObject jsonObject) {
 		String rawChannelStr = "";
-		Map<String, Object> derivedLocData = (HashMap<String, Object>) jsonObject.get("derivedlocationdata");
-
-		if (derivedLocData != null && derivedLocData.get("state") != null) {
-			rawChannelStr = (String) derivedLocData.get("state");
+		String channelIdentifier = mConfig.getMessageChannelIdentifier();
+		try {
+			rawChannelStr = JsonPath.parse(jsonObject).read("$." + channelIdentifier, String.class);
 		}
-		else {
+		catch (PathNotFoundException e) {
+			e.printStackTrace();
 			rawChannelStr = "others";
 		}
 		return rawChannelStr.replaceAll(channelScrubRegex, "");

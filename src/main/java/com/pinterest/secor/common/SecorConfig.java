@@ -644,7 +644,7 @@ public class SecorConfig {
 		return getString("secor.partition.output_dt_format");
 	}
 
-	public String getMaxFileAgePolicy() {
-	    return getString("secor.max.file.age.policy");
-	}
+	public String getMaxFileAgePolicy() { return getString("secor.max.file.age.policy"); }
+
+	public String getMessageChannelIdentifier() { return getString("secor.partition.message.channel.identifier"); }
 }

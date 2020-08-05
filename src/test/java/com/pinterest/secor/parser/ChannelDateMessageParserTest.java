@@ -65,6 +65,7 @@ public class ChannelDateMessageParserTest extends TestCase {
     @Test
     public void testExtractDateUsingInputPattern() throws Exception {
         Mockito.when(mConfig.getMessageTimestampName()).thenReturn("timestamp");
+        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn("derivedlocationdata.state");
         Mockito.when(mConfig.getPartitionPrefixMapping()).thenReturn("{\"ME_WORKFLOW_SUMMARY\":\"summary\",\"DEFAULT\":\"raw\"}");
 
         Mockito.when(mConfig.getMessageTimestampInputPattern()).thenReturn("yyyy-MM-dd HH:mm:ss");
@@ -90,6 +91,7 @@ public class ChannelDateMessageParserTest extends TestCase {
     public void testExtractDateWhenPrefixIsNotSet() throws Exception {
         Mockito.when(mConfig.getMessageTimestampName()).thenReturn("timestamp");
         Mockito.when(mConfig.isPartitionPrefixEnabled()).thenReturn(false);
+        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn("derivedlocationdata.state");
 
         Mockito.when(mConfig.getMessageTimestampInputPattern()).thenReturn("yyyy-MM-dd HH:mm:ss");
         assertEquals("Karnataka/2014-07-31", new ChannelDateMessageParser(mConfig).extractPartitions(mFormat1)[0]);
@@ -101,6 +103,7 @@ public class ChannelDateMessageParserTest extends TestCase {
         Mockito.when(mConfig.getString("secor.partition.output_dt_format", "yyyy-MM-dd")).thenReturn("yyyy-MM-dd");
         Mockito.when(mConfig.getMessageTimestampName()).thenReturn("timestamp");
         Mockito.when(mConfig.getPartitionPrefixMapping()).thenReturn("{\"ME_WORKFLOW_SUMMARY\":\"summary\",\"DEFAULT\":\"raw\"}");
+        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn("derivedlocationdata.state");
 
         // invalid date
         Mockito.when(mConfig.getMessageTimestampInputPattern()).thenReturn("yyyy-MM-dd HH:mm:ss"); // any pattern
@@ -119,6 +122,7 @@ public class ChannelDateMessageParserTest extends TestCase {
         Mockito.when(mConfig.getPartitionPrefixMapping()).thenReturn("{\"ME_WORKFLOW_SUMMARY\":\"summary\",\"DEFAULT\":\"raw\"}");
         Mockito.when(mConfig.getMessageTimestampInputPattern()).thenReturn("yyyy-MM-dd HH:mm:ss");
         Mockito.when(mConfig.getString("secor.partition.output_dt_format", "yyyy-MM-dd")).thenReturn("yyyy-MM-dd");
+        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn("derivedlocationdata.state");
 
         assertEquals("summary/Karnataka/2014-07-31", new ChannelDateMessageParser(mConfig).extractPartitions(mFormat1)[0]);
     }
@@ -129,6 +133,7 @@ public class ChannelDateMessageParserTest extends TestCase {
         Mockito.when(mConfig.getMessageTimestampInputPattern()).thenReturn("yyyy-MM-dd HH:mm:ss");
         Mockito.when(mConfig.getPartitionPrefixMapping()).thenReturn("{\"ME_WORKFLOW_SUMMARY\":\"summary\",\"DEFAULT\":\"raw\"}");
         Mockito.when(mConfig.getPartitionOutputDtFormat()).thenReturn("'yr='yyyy'/mo='MM'/dy='dd'/hr='HH");
+        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn("derivedlocationdata.state");
 
         assertEquals("summary/Karnataka/yr=2014/mo=07/dy=31/hr=04", new ChannelDateMessageParser(mConfig).extractPartitions(mFormat1)[0]);
     }

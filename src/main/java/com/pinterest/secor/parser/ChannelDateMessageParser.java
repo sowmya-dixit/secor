@@ -142,7 +142,7 @@ public class ChannelDateMessageParser extends MessageParser {
 			rawChannelStr = JsonPath.parse(jsonObject).read("$." + channelIdentifier, String.class);
 		}
 		catch (PathNotFoundException e) {
-			e.printStackTrace();
+			LOG.warn("Unable to get path: " + e.getMessage());
 			rawChannelStr = "others";
 		}
 		return rawChannelStr.replaceAll(channelScrubRegex, "");

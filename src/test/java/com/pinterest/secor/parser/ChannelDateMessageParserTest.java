@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.ArrayList;
 import java.util.TimeZone;
 
 @RunWith(PowerMockRunner.class)
@@ -37,7 +38,7 @@ public class ChannelDateMessageParserTest extends TestCase {
                 .getBytes("UTF-8");
         mFormat1 = new Message("test", 0, 0, null, format1, timestamp);
 
-        byte format2[] = "{\"timestamp\":\"2014/10/25\",\"eid\":\"IMPRESSION\",\"dimensions\":{\"channel\":\"test-channel\"},\"id\":0,\"guid\":\"0436b17b-e78a-4e82-accf-743bf1f0b884\",\"isActive\":false,\"balance\":\"$3,561.87\",\"picture\":\"http://placehold.it/32x32\",\"age\":23,\"eyeColor\":\"green\",\"name\":\"Mercedes Brewer\",\"gender\":\"female\",\"company\":\"MALATHION\",\"email\":\"mercedesbrewer@malathion.com\",\"phone\":\"+1 (848) 471-3000\",\"address\":\"786 Gilmore Court, Brule, Maryland, 3200\",\"about\":\"Quis nostrud Lorem deserunt esse ut reprehenderit aliqua nisi et sunt mollit est. Cupidatat incididunt minim anim eiusmod culpa elit est dolor ullamco. Aliqua cillum eiusmod ullamco nostrud Lorem sit amet Lorem aliquip esse esse velit.\\r\\n\",\"registered\":\"2014-01-14T13:07:28 +08:00\",\"latitude\":47.672012,\"longitude\":102.788623,\"tags\":[\"amet\",\"amet\",\"dolore\",\"eu\",\"qui\",\"fugiat\",\"laborum\"],\"friends\":[{\"id\":0,\"name\":\"Rebecca Hardy\"},{\"id\":1,\"name\":\"Sutton Briggs\"},{\"id\":2,\"name\":\"Dena Campos\"}],\"greeting\":\"Hello, Mercedes Brewer! You have 7 unread messages.\",\"favoriteFruit\":\"strawberry\",\"derivedlocationdata\":{\"district\":\"Bengaluru\",\"state\":\"Karnataka\",\"from\":\"user-profile\"}}"
+        byte format2[] = "{\"timestamp\":\"2014/10/25\",\"eid\":\"IMPRESSION\",\"context\":{\"channel\":\"test-channel\"},\"id\":0,\"guid\":\"0436b17b-e78a-4e82-accf-743bf1f0b884\",\"isActive\":false,\"balance\":\"$3,561.87\",\"picture\":\"http://placehold.it/32x32\",\"age\":23,\"eyeColor\":\"green\",\"name\":\"Mercedes Brewer\",\"gender\":\"female\",\"company\":\"MALATHION\",\"email\":\"mercedesbrewer@malathion.com\",\"phone\":\"+1 (848) 471-3000\",\"address\":\"786 Gilmore Court, Brule, Maryland, 3200\",\"about\":\"Quis nostrud Lorem deserunt esse ut reprehenderit aliqua nisi et sunt mollit est. Cupidatat incididunt minim anim eiusmod culpa elit est dolor ullamco. Aliqua cillum eiusmod ullamco nostrud Lorem sit amet Lorem aliquip esse esse velit.\\r\\n\",\"registered\":\"2014-01-14T13:07:28 +08:00\",\"latitude\":47.672012,\"longitude\":102.788623,\"tags\":[\"amet\",\"amet\",\"dolore\",\"eu\",\"qui\",\"fugiat\",\"laborum\"],\"friends\":[{\"id\":0,\"name\":\"Rebecca Hardy\"},{\"id\":1,\"name\":\"Sutton Briggs\"},{\"id\":2,\"name\":\"Dena Campos\"}],\"greeting\":\"Hello, Mercedes Brewer! You have 7 unread messages.\",\"favoriteFruit\":\"strawberry\",\"derivedlocationdata\":{\"district\":\"Bengaluru\",\"state\":\"Karnataka\",\"from\":\"user-profile\"}}"
                 .getBytes("UTF-8");
         mFormat2 = new Message("test", 0, 0, null, format2, timestamp);
 
@@ -65,7 +66,8 @@ public class ChannelDateMessageParserTest extends TestCase {
     @Test
     public void testExtractDateUsingInputPattern() throws Exception {
         Mockito.when(mConfig.getMessageTimestampName()).thenReturn("timestamp");
-        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn("derivedlocationdata.state");
+        String[] channelIdentifier = {"derivedlocationdata.state"};
+        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn(channelIdentifier);
         Mockito.when(mConfig.getPartitionPrefixMapping()).thenReturn("{\"ME_WORKFLOW_SUMMARY\":\"summary\",\"DEFAULT\":\"raw\"}");
 
         Mockito.when(mConfig.getMessageTimestampInputPattern()).thenReturn("yyyy-MM-dd HH:mm:ss");
@@ -89,9 +91,10 @@ public class ChannelDateMessageParserTest extends TestCase {
 
     @Test
     public void testExtractDateWhenPrefixIsNotSet() throws Exception {
+        String[] channelIdentifier = {"derivedlocationdata.state"};
         Mockito.when(mConfig.getMessageTimestampName()).thenReturn("timestamp");
         Mockito.when(mConfig.isPartitionPrefixEnabled()).thenReturn(false);
-        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn("derivedlocationdata.state");
+        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn(channelIdentifier);
 
         Mockito.when(mConfig.getMessageTimestampInputPattern()).thenReturn("yyyy-MM-dd HH:mm:ss");
         assertEquals("Karnataka/2014-07-31", new ChannelDateMessageParser(mConfig).extractPartitions(mFormat1)[0]);
@@ -99,11 +102,12 @@ public class ChannelDateMessageParserTest extends TestCase {
 
     @Test
     public void testExtractDateWithWrongEntries() throws Exception {
+        String[] channelIdentifier = {"derivedlocationdata.state"};
         Mockito.when(mConfig.getMessageTimestampName()).thenReturn("timestamp");
         Mockito.when(mConfig.getString("secor.partition.output_dt_format", "yyyy-MM-dd")).thenReturn("yyyy-MM-dd");
         Mockito.when(mConfig.getMessageTimestampName()).thenReturn("timestamp");
         Mockito.when(mConfig.getPartitionPrefixMapping()).thenReturn("{\"ME_WORKFLOW_SUMMARY\":\"summary\",\"DEFAULT\":\"raw\"}");
-        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn("derivedlocationdata.state");
+        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn(channelIdentifier);
 
         // invalid date
         Mockito.when(mConfig.getMessageTimestampInputPattern()).thenReturn("yyyy-MM-dd HH:mm:ss"); // any pattern
@@ -118,24 +122,40 @@ public class ChannelDateMessageParserTest extends TestCase {
 
     @Test
     public void testDatePrefix() throws Exception {
+        String[] channelIdentifier = {"derivedlocationdata.state"};
         Mockito.when(mConfig.getMessageTimestampName()).thenReturn("timestamp");
         Mockito.when(mConfig.getPartitionPrefixMapping()).thenReturn("{\"ME_WORKFLOW_SUMMARY\":\"summary\",\"DEFAULT\":\"raw\"}");
         Mockito.when(mConfig.getMessageTimestampInputPattern()).thenReturn("yyyy-MM-dd HH:mm:ss");
         Mockito.when(mConfig.getString("secor.partition.output_dt_format", "yyyy-MM-dd")).thenReturn("yyyy-MM-dd");
-        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn("derivedlocationdata.state");
+        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn(channelIdentifier);
 
         assertEquals("summary/Karnataka/2014-07-31", new ChannelDateMessageParser(mConfig).extractPartitions(mFormat1)[0]);
     }
 
     @Test
     public void testCustomDateFormat() throws Exception {
+        String[] channelIdentifier = {"derivedlocationdata.state"};
         Mockito.when(mConfig.getMessageTimestampName()).thenReturn("timestamp");
         Mockito.when(mConfig.getMessageTimestampInputPattern()).thenReturn("yyyy-MM-dd HH:mm:ss");
         Mockito.when(mConfig.getPartitionPrefixMapping()).thenReturn("{\"ME_WORKFLOW_SUMMARY\":\"summary\",\"DEFAULT\":\"raw\"}");
         Mockito.when(mConfig.getPartitionOutputDtFormat()).thenReturn("'yr='yyyy'/mo='MM'/dy='dd'/hr='HH");
-        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn("derivedlocationdata.state");
+        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn(channelIdentifier);
 
         assertEquals("summary/Karnataka/yr=2014/mo=07/dy=31/hr=04", new ChannelDateMessageParser(mConfig).extractPartitions(mFormat1)[0]);
+    }
+
+    @Test
+    public void testMessageChannelIdentifier() throws Exception {
+        String[] channelIdentifier = {"context.channel", "dimensions.channel"};
+        Mockito.when(mConfig.getMessageTimestampName()).thenReturn("timestamp");
+        Mockito.when(mConfig.getMessageChannelIdentifier()).thenReturn(channelIdentifier);
+        Mockito.when(mConfig.getPartitionPrefixMapping()).thenReturn("{\"ME_WORKFLOW_SUMMARY\":\"summary\",\"DEFAULT\":\"raw\"}");
+
+        Mockito.when(mConfig.getMessageTimestampInputPattern()).thenReturn("yyyy-MM-dd HH:mm:ss");
+        assertEquals("summary/test-channel/2014-07-31", new ChannelDateMessageParser(mConfig).extractPartitions(mFormat1)[0]);
+
+        Mockito.when(mConfig.getMessageTimestampInputPattern()).thenReturn("yyyy/MM/d");
+        assertEquals("raw/test-channel/2014-10-25", new ChannelDateMessageParser(mConfig).extractPartitions(mFormat2)[0]);
     }
 
 }

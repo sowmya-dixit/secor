@@ -21,6 +21,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.PathNotFoundException;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
 
@@ -108,7 +112,7 @@ public class ChannelDateMessageParser extends MessageParser {
 
 					String path = channel + "/";
 					result[0] = prefixEnabled
-							? path + getPrefix(eventValue.toString()) + outputFormatter.format(dateFormat)
+							? getPrefix(eventValue.toString()) + path + outputFormatter.format(dateFormat)
 							: path + outputFormatter.format(dateFormat);
 					return result;
 				} catch (Exception e) {
@@ -135,18 +139,27 @@ public class ChannelDateMessageParser extends MessageParser {
 
 	private String getChannel(JSONObject jsonObject) {
 		String rawChannelStr = "";
-		Map<String, Object> dimensions = (HashMap<String, Object>) jsonObject.get("dimensions");
-		Map<String, Object> context = (HashMap<String, Object>) jsonObject.get("context");
-
-		String channel = (String) jsonObject.get("channel");
-		if (channel != null && !channel.isEmpty()) {
-			rawChannelStr = channel;
-		} else if (dimensions != null && dimensions.get("channel") != null) {
-			rawChannelStr = (String) dimensions.get("channel");
-		} else if (context != null && context.get("channel") != null) {
-			rawChannelStr = (String) context.get("channel");
-		} else {
-			rawChannelStr = "in.ekstep";
+		String[] channelIdentifier = mConfig.getMessageChannelIdentifier();
+		if (channelIdentifier.length > 0) {
+			try {
+				// If channel identifier is common for both raw and summary events
+				if (channelIdentifier.length == 1) {
+					rawChannelStr = JsonPath.parse(jsonObject).read("$." + channelIdentifier[0], String.class);
+				}
+				// If channel identifier is different for raw and summary events. Ex: context.channel/dimensions.channel
+				else {
+					try {
+						rawChannelStr = JsonPath.parse(jsonObject).read("$." + channelIdentifier[0], String.class);
+					}
+					catch (PathNotFoundException e) {
+						LOG.warn("Unable to get path: " + e.getMessage());
+						rawChannelStr = JsonPath.parse(jsonObject).read("$." + channelIdentifier[1], String.class);
+					}
+				}
+			} catch (PathNotFoundException e) {
+				LOG.warn("Unable to get path: " + e.getMessage());
+				rawChannelStr = "others";
+			}
 		}
 		return rawChannelStr.replaceAll(channelScrubRegex, "");
 	}

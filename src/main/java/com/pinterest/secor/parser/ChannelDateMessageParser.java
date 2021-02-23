@@ -20,7 +20,6 @@ package com.pinterest.secor.parser;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
-
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;

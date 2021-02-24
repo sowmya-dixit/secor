@@ -87,7 +87,7 @@ public class SecorKafkaMessageIterator implements KafkaMessageIterator, Rebalanc
 
         props.put("bootstrap.servers", config.getKafkaSeedBrokerHost() + ":" + config.getKafkaSeedBrokerPort());
         props.put("group.id", config.getKafkaGroup());
-        props.put("enable.auto.commit", false);
+        props.put("enable.auto.commit", true);
         props.put("auto.offset.reset", offsetResetConfig);
         props.put("client.id", IdUtil.getConsumerId());
         props.put("key.deserializer", ByteArrayDeserializer.class);

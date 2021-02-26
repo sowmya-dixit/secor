@@ -734,6 +734,11 @@ public class SecorConfig {
         }
     }
 
+    public boolean checkPropertyProvided(String name) {
+        if (!mProperties.containsKey(name)) return false;
+        else return true;
+    }
+
     public String getString(String name) {
         checkProperty(name);
         return mProperties.getString(name);

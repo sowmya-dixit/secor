@@ -654,7 +654,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <repository>dp-secor-04</repository>
+                    <repository>dp-secor-latest</repository>
                     <tag>0.29</tag>
                 </configuration>
             </plugin>

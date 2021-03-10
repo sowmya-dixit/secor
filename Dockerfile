@@ -9,6 +9,9 @@ RUN mkdir -p /opt/secor
 ENV SECOR_HOME=/opt/secor
 WORKDIR $SECOR_HOME
 
+RUN groupadd --system --gid=9999 secor && \
+    useradd --system --home-dir $SECOR_HOME --uid=9999 --gid=secor secor
+
 ADD target/secor-*-bin.tar.gz $SECOR_HOME
 
 #COPY src/main/scripts/docker-entrypoint.sh /docker-entrypoint.sh

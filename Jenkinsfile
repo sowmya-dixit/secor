@@ -30,17 +30,20 @@ node('build-slave') {
                 sh 'mvn clean install'
             }
 
+            stage('Package') {
+                sh "/opt/apache-maven-3.6.3/bin/mvn3.6 package -Pbuild-docker-image"
+            }
+
+            stage('Retagging'){
+                sh """
+                    docker tag secor:$params.release_ver ${hub_org}/secor:$params.release_ver
+                    echo {\\"image_name\\" : \\"secor\\", \\"image_tag\\" : \\"$params.release_ver\\", \\"node_name\\" : \\"${env.NODE_NAME}\\"} > metadata.json
+                """
+            }
 
             stage('Archive artifacts'){
-                sh """
-                        mkdir secor_artifacts
-                        cp target/secor-*.tar.gz secor_artifacts
-                        zip -j secor_artifacts.zip:${artifact_version} secor_artifacts/*
-                    """
-                archiveArtifacts artifacts: "secor_artifacts.zip:${artifact_version}", fingerprint: true, onlyIfSuccessful: true
-                sh """echo {\\"artifact_name\\" : \\"secor_artifacts.zip\\", \\"artifact_version\\" : \\"${artifact_version}\\", \\"node_name\\" : \\"${env.NODE_NAME}\\"} > metadata.json"""
-                archiveArtifacts artifacts: 'metadata.json', onlyIfSuccessful: true
-                currentBuild.description = "${artifact_version}"
+                archiveArtifacts "metadata.json"
+                currentBuild.description = "$params.release_ver"
             }
         }
 

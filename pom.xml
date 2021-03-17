@@ -39,6 +39,7 @@
     </scm>
 
     <properties>
+        <release-version>0.29</release-version>
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <encoding>UTF-8</encoding>
@@ -663,7 +664,7 @@
                         </executions>
                         <configuration>
                             <repository>secor</repository>
-                            <tag>0.29</tag>
+                            <tag>${release-version}</tag>
                         </configuration>
                     </plugin>
                 </plugins>

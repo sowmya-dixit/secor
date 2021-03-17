@@ -133,4 +133,4 @@ CLASSPATH=${CLASSPATH:-$DEFAULT_CLASSPATH}
 #        -Dconfig=${CONFIG_FILE:-secor.prod.partition.properties} $SECOR_CONFIG \
 #        -cp $CLASSPATH ${SECOR_MAIN_CLASS:-com.pinterest.secor.main.ConsumerMain}
 exec java -ea -Dsecor_group=${SECOR_GROUP:-partition} -Dconfig=${CONFIG_FILE:-secor.partition.properties} \
-    -cp /opt/secor/secor-0.29.jar:/opt/secor/lib/* com.pinterest.secor.main.ConsumerMain
+    -cp $CLASSPATH com.pinterest.secor.main.ConsumerMain

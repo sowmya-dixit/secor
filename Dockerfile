@@ -17,6 +17,6 @@ USER secor
 
 ADD target/secor-*-bin.tar.gz $SECOR_HOME
 
-COPY src/main/scripts/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-ENTRYPOINT ["/docker-entrypoint.sh"]
+COPY src/main/scripts/docker-entrypoint.sh $SECOR_HOME/docker-entrypoint.sh
+RUN chmod +x $SECOR_HOME/docker-entrypoint.sh
+ENTRYPOINT ["$SECOR_HOME/docker-entrypoint.sh"]

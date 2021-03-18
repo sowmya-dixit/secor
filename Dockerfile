@@ -12,11 +12,11 @@ WORKDIR $SECOR_HOME
 RUN groupadd --system --gid=9999 secor && \
     useradd --system --home-dir $SECOR_HOME --uid=9999 --gid=secor secor
 
-RUN chown -R secor:secor $SECOR_HOME
-USER secor
-
 ADD target/secor-*-bin.tar.gz $SECOR_HOME
 
 COPY src/main/scripts/docker-entrypoint.sh $SECOR_HOME/docker-entrypoint.sh
+RUN find $SECOR_HOME -type d -exec chown -R secor:secor {} \;
 RUN chmod +x $SECOR_HOME/docker-entrypoint.sh
+
+USER secor
 ENTRYPOINT ["$SECOR_HOME/docker-entrypoint.sh"]

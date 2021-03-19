@@ -13,16 +13,16 @@ node('build-slave') {
                     checkout scm
                     commit_hash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     branch_name = sh(script: 'git name-rev --name-only HEAD | rev | cut -d "/" -f1| rev', returnStdout: true).trim()
-                    artifact_version = branch_name + "_" + commit_hash
+                    build_tag = branch_name + "_" + commit_hash + "_" + env.BUILD_NUMBER
                     println(ANSI_BOLD + ANSI_YELLOW + "Tag not specified, using the latest commit hash: " + commit_hash + ANSI_NORMAL)
                 }
                 else {
                     def scmVars = checkout scm
                     checkout scm: [$class: 'GitSCM', branches: [[name: "refs/tags/$params.github_release_tag"]],  userRemoteConfigs: [[url: scmVars.GIT_URL]]]
-                    artifact_version = params.github_release_tag
+                    build_tag = params.github_release_tag + "_" + env.BUILD_NUMBER
                     println(ANSI_BOLD + ANSI_YELLOW + "Tag specified, building from tag: " + params.github_release_tag + ANSI_NORMAL)
                 }
-                echo "artifact_version: "+ artifact_version
+                echo "build_tag: "+ build_tag
             }
         }
 
@@ -30,17 +30,20 @@ node('build-slave') {
                 sh 'mvn clean install'
             }
 
+            stage('Package') {
+                sh "/opt/apache-maven-3.6.3/bin/mvn3.6 package -Pbuild-docker-image -Drelease-version=${build_tag}"
+            }
+
+            stage('Retagging'){
+                sh """
+                    docker tag secor:${build_tag} ${hub_org}/secor:${build_tag}
+                    echo {\\"image_name\\" : \\"secor\\", \\"image_tag\\" : \\"${build_tag}\\", \\"node_name\\" : \\"${env.NODE_NAME}\\"} > metadata.json
+                """
+            }
 
             stage('Archive artifacts'){
-                sh """
-                        mkdir secor_artifacts
-                        cp target/secor-*.tar.gz secor_artifacts
-                        zip -j secor_artifacts.zip:${artifact_version} secor_artifacts/*
-                    """
-                archiveArtifacts artifacts: "secor_artifacts.zip:${artifact_version}", fingerprint: true, onlyIfSuccessful: true
-                sh """echo {\\"artifact_name\\" : \\"secor_artifacts.zip\\", \\"artifact_version\\" : \\"${artifact_version}\\", \\"node_name\\" : \\"${env.NODE_NAME}\\"} > metadata.json"""
-                archiveArtifacts artifacts: 'metadata.json', onlyIfSuccessful: true
-                currentBuild.description = "${artifact_version}"
+                archiveArtifacts "metadata.json"
+                currentBuild.description = "${build_tag}"
             }
         }
 

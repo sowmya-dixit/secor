@@ -16,6 +16,7 @@ ADD target/secor-*-bin.tar.gz $SECOR_HOME
 
 COPY src/main/scripts/docker-entrypoint.sh /docker-entrypoint.sh
 RUN find $SECOR_HOME -type d -exec chown -R secor:secor {} \;
+RUN chown -R secor:secor /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 USER secor

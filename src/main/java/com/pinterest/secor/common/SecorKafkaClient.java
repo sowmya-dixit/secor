@@ -109,7 +109,7 @@ public class SecorKafkaClient implements KafkaClient {
         mPollTimeout = config.getNewConsumerPollTimeoutSeconds();
         Properties props = new Properties();
         props.put("bootstrap.servers", config.getKafkaSeedBrokerHost() + ":" + config.getKafkaSeedBrokerPort());
-        props.put("enable.auto.commit", true);
+        props.put("enable.auto.commit", false);
         props.put("auto.offset.reset", "earliest");
         props.put("key.deserializer", ByteArrayDeserializer.class);
         props.put("value.deserializer", ByteArrayDeserializer.class);

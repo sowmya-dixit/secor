@@ -137,29 +137,31 @@ public class ChannelDateMessageParser extends MessageParser {
 	}
 
 	private String getChannel(JSONObject jsonObject) {
-		String rawChannelStr = "";
+		String channelStr = "";
+		String finalChannelStr = "";
 		String[] channelIdentifier = mConfig.getMessageChannelIdentifier();
 		if (channelIdentifier.length > 0) {
 			try {
 				// If channel identifier is common for both raw and summary events
 				if (channelIdentifier.length == 1) {
-					rawChannelStr = JsonPath.parse(jsonObject).read("$." + channelIdentifier[0], String.class);
+					channelStr = JsonPath.parse(jsonObject).read("$." + channelIdentifier[0], String.class);
 				}
 				// If channel identifier is different for raw and summary events. Ex: context.channel/dimensions.channel
 				else {
 					try {
-						rawChannelStr = JsonPath.parse(jsonObject).read("$." + channelIdentifier[0], String.class);
+						channelStr = JsonPath.parse(jsonObject).read("$." + channelIdentifier[0], String.class);
 					}
 					catch (PathNotFoundException e) {
 						LOG.warn("Unable to get path: " + e.getMessage());
-						rawChannelStr = JsonPath.parse(jsonObject).read("$." + channelIdentifier[1], String.class);
+						channelStr = JsonPath.parse(jsonObject).read("$." + channelIdentifier[1], String.class);
 					}
 				}
 			} catch (PathNotFoundException e) {
 				LOG.warn("Unable to get path: " + e.getMessage());
-				rawChannelStr = "others";
+				channelStr = "others";
 			}
 		}
-		return rawChannelStr.replaceAll(channelScrubRegex, "");
+		if (channelStr.isEmpty()) finalChannelStr = "others"; else finalChannelStr = channelStr;
+		return finalChannelStr.replaceAll(channelScrubRegex, "");
 	}
 }
